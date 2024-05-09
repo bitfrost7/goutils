@@ -1,26 +1,37 @@
 package goutils
 
-type keyable[K comparable] interface {
-	key() K
-}
-
-func SliceJoin[K comparable, A keyable[K], B keyable[K]](a []A, b []B, join func(A, B) A) []A {
-	m := make(map[K]A)
-	for _, v := range a {
-		m[v.key()] = v
-	}
-	for _, v := range b {
-		if _, ok := m[v.key()]; ok {
-			join(m[v.key()], v)
+// SliceFilter 过滤切片中的一些特定值并返回结果。
+//
+//	s: 	指定切片。
+//	filter: 	过滤函数,true则过滤。
+func SliceFilter[T any](s []T, filter func(v T) bool) []T {
+	res := make([]T, 0, len(s))
+	for _, e := range s {
+		if !filter(e) {
+			res = append(res, e)
 		}
 	}
-	return a
+	return res
 }
 
-func Slice2Map[K comparable, T keyable[K]](s []T) map[K]T {
+// Slice2Map 将实现Mappable接口的slice转化为map
+func Slice2Map[K comparable, T Mappable[K]](s []T) map[K]T {
 	m := make(map[K]T)
 	for _, v := range s {
-		m[v.key()] = v
+		m[v.Key()] = v
+	}
+	return m
+}
+
+// Slice2MapWithConflict 将实现Mappable接口的slice转化为map 并指定冲突解决方式
+func Slice2MapWithConflict[K comparable, T Mappable[K]](s []T, conflict func(old, new T) T) map[K]T {
+	m := make(map[K]T)
+	for _, v := range s {
+		if _, ok := m[v.Key()]; ok {
+			m[v.Key()] = conflict(m[v.Key()], v)
+		} else {
+			m[v.Key()] = v
+		}
 	}
 	return m
 }
