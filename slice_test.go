@@ -37,6 +37,6 @@ func TestSlice2Map(t *testing.T) {
 		id:   3,
 		name: "dd",
 	})
-	m := Slice2MapWithCombine(s)
+	m := Slice2Map(s)
 	fmt.Println(m)
 }
