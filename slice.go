@@ -46,20 +46,16 @@ func Slice2Map[K comparable, T Mappable[K]](s []T) map[K]T {
 func Slice2MapWithConflict[K comparable, T Mappable[K]](s []T, conflict func(old, new T) T) map[K]T {
 	m := make(map[K]T)
 	for _, v := range s {
-		if _, ok := m[v.Key()]; ok {
-			m[v.Key()] = conflict(m[v.Key()], v)
-		} else {
-			m[v.Key()] = v
-		}
+		e, ok := m[v.Key()]
+		m[v.Key()] = IF(ok, conflict(e, v), e)
 	}
 	return m
 }
 
-func SliceReduce[U any, V any](initial V, s1 []U, reduce func(V, U) V) []V {
-	result := make([]V, len(s1)+1)
-	result[0] = initial
-	for i, v := range s1 {
-		result[i+1] = reduce(result[i], v)
+func SliceReduce[U any, V any](initial U, s1 []V, reduce func(U, V) U) U {
+	result := initial
+	for _, v := range s1 {
+		result = reduce(result, v)
 	}
 	return result
 }
